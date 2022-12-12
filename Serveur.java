@@ -1,31 +1,49 @@
 package serveur;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.OutputStream;
-import java.net.ServerSocket;
-import java.net.Socket;
+import java.io.*;
+import java.net.*;
+import java.nio.ByteBuffer;
 
-/**
- * Serveur
- */
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import javazoom.jl.player.Player;
+
 public class Serveur {
-    public static void main(String[] args) throws Exception {
-        ServerSocket serveurSocket = new ServerSocket(1030);
+    public static void main(String[] args) throws IOException {
+        ServerSocket serverSocket = new ServerSocket(1030);
         System.out.println("En attente d'un client");
-
-        Socket socket = serveurSocket.accept();
+        Socket socket = serverSocket.accept();
         OutputStream outputStream = socket.getOutputStream();
-        File song = new File("D:\\Data Ilo\\ITU\\L2\\S3\\Reseau\\StreamingAudio\\Songs\\2Pac_Hit_Em_Up_Dirty.mp3");
-        FileInputStream fileInputStream = new FileInputStream(song);
+
+    
+//source Multimedia 
+        File multimedia = new File("./Multimedia");
+        File[] liste = multimedia.listFiles();
+        ObjectOutputStream oos = new ObjectOutputStream(outputStream);
+//Mandefa taille liste vers client
+        oos.writeInt(liste.length);
+
+        for(int i = 0; i < liste.length ; i++){
+            oos.writeObject(liste[i].getName());
+            System.out.println(liste[i].getName());
+        }
+
+        InputStream inputStream = socket.getInputStream();
+        DataInputStream dis = new DataInputStream(inputStream);
+        String titre = dis.readUTF();
+        File ficher = new File(titre);
+        String source = "./Multimedia/";
+
+        FileInputStream fileInputStream = new FileInputStream(source+ficher);
+        DataOutputStream dos = new DataOutputStream(outputStream);
 
         while (true) {
-            byte[] array = new byte[1024];
+            byte[] array = new byte[1000];
             fileInputStream.read(array);
-            outputStream.write(array);
-            outputStream.flush();
-            //Mijery longueur byte envoye
-            System.out.println(fileInputStream.available()+"bytes sent");
+            dos.write(array);
+            dos.flush();
         }
+        
+        
     }
 }
